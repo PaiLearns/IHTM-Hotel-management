@@ -1,0 +1,19 @@
+# Local configuration and credentials
+.env
+.env.*
+!.env.example
+config.local.php
+
+# Local dependencies and generated files
+/vendor/
+/node_modules/
+/logs/
+*.log
+*.sql.bak
+*.dump
+
+# Windows and editor metadata
+Thumbs.db
+Desktop.ini
+.vscode/
+.idea/
