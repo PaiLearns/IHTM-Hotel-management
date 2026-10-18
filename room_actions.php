@@ -31,7 +31,7 @@ if (!in_array($action, $allowedActions, true)) {
 }
 
 $roomTypes = array('single', 'double', 'twin', 'deluxe', 'suite', 'family');
-$roomStatuses = array('available', 'occupied', 'maintenance');
+$roomStatuses = array('available', 'occupied', 'dirty', 'maintenance');
 
 if ($action === 'delete') {
     $roomId = isset($_POST['room_id']) ? filter_var($_POST['room_id'], FILTER_VALIDATE_INT) : false;

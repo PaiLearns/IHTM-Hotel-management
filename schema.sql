@@ -1,3 +1,5 @@
+-- Current IHTM schema. Safe to import again: existing table data is retained,
+-- and the starter account/rooms are inserted only when their unique keys are absent.
 CREATE DATABASE IF NOT EXISTS hotel_db
     CHARACTER SET utf8mb4
     COLLATE utf8mb4_unicode_ci;
@@ -22,7 +24,7 @@ CREATE TABLE IF NOT EXISTS rooms (
     room_type ENUM('single', 'double', 'twin', 'deluxe', 'suite', 'family') NOT NULL,
     capacity INT UNSIGNED NOT NULL DEFAULT 1,
     nightly_rate DECIMAL(10, 2) NOT NULL DEFAULT 0.00,
-    status ENUM('available', 'occupied', 'maintenance') NOT NULL DEFAULT 'available',
+    status ENUM('available', 'occupied', 'dirty', 'maintenance') NOT NULL DEFAULT 'available',
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (id),
     UNIQUE KEY uq_rooms_room_number (room_number)
@@ -30,7 +32,8 @@ CREATE TABLE IF NOT EXISTS rooms (
 
 ALTER TABLE rooms
     MODIFY COLUMN room_type ENUM('single', 'double', 'twin', 'deluxe', 'suite', 'family') NOT NULL,
-    MODIFY COLUMN capacity INT UNSIGNED NOT NULL DEFAULT 1;
+    MODIFY COLUMN capacity INT UNSIGNED NOT NULL DEFAULT 1,
+    MODIFY COLUMN status ENUM('available', 'occupied', 'dirty', 'maintenance') NOT NULL DEFAULT 'available';
 
 CREATE TABLE IF NOT EXISTS guests (
     id INT UNSIGNED NOT NULL AUTO_INCREMENT,
@@ -64,6 +67,30 @@ CREATE TABLE IF NOT EXISTS reservations (
     CONSTRAINT fk_reservations_room FOREIGN KEY (room_id)
         REFERENCES rooms (id) ON UPDATE CASCADE ON DELETE RESTRICT,
     CONSTRAINT fk_reservations_user FOREIGN KEY (user_id)
+        REFERENCES users (id) ON UPDATE CASCADE ON DELETE RESTRICT
+) ENGINE=InnoDB;
+
+CREATE TABLE IF NOT EXISTS room_transfers (
+    id INT UNSIGNED NOT NULL AUTO_INCREMENT,
+    reservation_id INT UNSIGNED NOT NULL,
+    from_room_id INT UNSIGNED NOT NULL,
+    from_room_number VARCHAR(20) NOT NULL,
+    to_room_id INT UNSIGNED NOT NULL,
+    to_room_number VARCHAR(20) NOT NULL,
+    changed_by INT UNSIGNED NOT NULL,
+    reason VARCHAR(500) NOT NULL,
+    transferred_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (id),
+    KEY idx_room_transfers_reservation (reservation_id, transferred_at),
+    KEY idx_room_transfers_from_room (from_room_id),
+    KEY idx_room_transfers_to_room (to_room_id),
+    CONSTRAINT fk_room_transfers_reservation FOREIGN KEY (reservation_id)
+        REFERENCES reservations (id) ON UPDATE CASCADE ON DELETE RESTRICT,
+    CONSTRAINT fk_room_transfers_from_room FOREIGN KEY (from_room_id)
+        REFERENCES rooms (id) ON UPDATE CASCADE ON DELETE RESTRICT,
+    CONSTRAINT fk_room_transfers_to_room FOREIGN KEY (to_room_id)
+        REFERENCES rooms (id) ON UPDATE CASCADE ON DELETE RESTRICT,
+    CONSTRAINT fk_room_transfers_user FOREIGN KEY (changed_by)
         REFERENCES users (id) ON UPDATE CASCADE ON DELETE RESTRICT
 ) ENGINE=InnoDB;
 

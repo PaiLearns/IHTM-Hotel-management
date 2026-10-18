@@ -11,6 +11,7 @@ try {
         'total' => (int) $pdo->query('SELECT COUNT(*) FROM rooms')->fetchColumn(),
         'available' => (int) $pdo->query("SELECT COUNT(*) FROM rooms WHERE status = 'available'")->fetchColumn(),
         'occupied' => (int) $pdo->query("SELECT COUNT(*) FROM rooms WHERE status = 'occupied'")->fetchColumn(),
+        'attention' => (int) $pdo->query("SELECT COUNT(*) FROM rooms WHERE status IN ('dirty', 'maintenance')")->fetchColumn(),
     );
 
     $todayStatement = $pdo->prepare(
@@ -65,7 +66,7 @@ require __DIR__ . '/includes/header.php';
     <p class="mt-2 text-slate-600">Today’s room and guest activity at a glance.</p>
 </section>
 
-<section class="grid gap-4 sm:grid-cols-2 xl:grid-cols-5" aria-label="Hotel summary">
+<section class="grid gap-4 sm:grid-cols-2 xl:grid-cols-6" aria-label="Hotel summary">
     <article class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
         <p class="text-sm font-medium text-slate-500">Total rooms</p>
         <p class="mt-3 text-3xl font-bold text-ihtm-navy"><?php echo $roomCounts['total']; ?></p>
@@ -77,6 +78,10 @@ require __DIR__ . '/includes/header.php';
     <article class="rounded-xl border border-blue-200 bg-white p-5 shadow-sm">
         <div class="flex items-center justify-between gap-2"><p class="text-sm font-medium text-slate-500">Occupied rooms</p><span class="rounded-full bg-ihtm-navy px-2.5 py-1 text-xs font-semibold text-white">Occupied</span></div>
         <p class="mt-3 text-3xl font-bold text-ihtm-navy"><?php echo $roomCounts['occupied']; ?></p>
+    </article>
+    <article class="rounded-xl border border-amber-200 bg-white p-5 shadow-sm">
+        <div class="flex items-center justify-between gap-2"><p class="text-sm font-medium text-slate-500">Rooms needing attention</p><span class="rounded-full bg-amber-100 px-2.5 py-1 text-xs font-semibold text-amber-800">Dirty / maintenance</span></div>
+        <p class="mt-3 text-3xl font-bold text-amber-700"><?php echo $roomCounts['attention']; ?></p>
     </article>
     <article class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
         <p class="text-sm font-medium text-slate-500">Today's check-ins</p>

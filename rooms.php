@@ -4,7 +4,7 @@ require_once __DIR__ . '/includes/auth_check.php';
 require_once __DIR__ . '/includes/db.php';
 
 $pageTitle = 'Rooms';
-$allowedFilters = array('all', 'available', 'occupied', 'maintenance');
+$allowedFilters = array('all', 'available', 'occupied', 'dirty', 'maintenance');
 $filter = isset($_GET['status']) && in_array($_GET['status'], $allowedFilters, true)
     ? $_GET['status']
     : 'all';
@@ -19,16 +19,19 @@ $roomTypes = array(
 $roomStatuses = array(
     'available' => 'Available',
     'occupied' => 'Occupied',
+    'dirty' => 'Dirty',
     'maintenance' => 'Maintenance',
 );
 $roomStatusClasses = array(
     'available' => 'border-emerald-200 bg-emerald-50',
     'occupied' => 'border-blue-200 bg-blue-50',
+    'dirty' => 'border-amber-200 bg-amber-50',
     'maintenance' => 'border-slate-300 bg-slate-100',
 );
 $roomBadgeClasses = array(
     'available' => 'bg-emerald-100 text-emerald-800',
     'occupied' => 'bg-ihtm-navy text-white',
+    'dirty' => 'bg-amber-100 text-amber-800',
     'maintenance' => 'bg-slate-200 text-slate-700',
 );
 
@@ -55,7 +58,7 @@ require __DIR__ . '/includes/header.php';
     <div>
         <p class="text-sm font-semibold uppercase tracking-wider text-amber-700">Front desk workspace</p>
         <h1 class="mt-1 text-3xl font-bold tracking-tight text-ihtm-navy">Room management</h1>
-        <p class="mt-2 text-slate-600">Manage room details, rates, capacity, and operational status.</p>
+        <p class="mt-2 text-slate-600">Manage room details, rates, capacity, and operational status. Mark rooms available after maintenance is complete.</p>
     </div>
     <p class="rounded-lg bg-white px-4 py-2 text-sm font-semibold text-slate-600 shadow-sm ring-1 ring-slate-200"><?php echo count($rooms); ?> room<?php echo count($rooms) === 1 ? '' : 's'; ?></p>
 </section>

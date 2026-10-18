@@ -73,7 +73,7 @@ try {
 
         $updateReservation = $pdo->prepare("UPDATE reservations SET status = 'checked_out' WHERE id = :reservation_id");
         $updateReservation->execute(array('reservation_id' => $reservationId));
-        $updateRoom = $pdo->prepare("UPDATE rooms SET status = 'available' WHERE id = :room_id");
+        $updateRoom = $pdo->prepare("UPDATE rooms SET status = 'maintenance' WHERE id = :room_id");
         $updateRoom->execute(array('room_id' => $reservation['room_id']));
         $message = 'Guest checked out. The room is now marked available.';
     } else {

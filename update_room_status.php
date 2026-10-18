@@ -26,7 +26,7 @@ if ($sessionToken === '' || !hash_equals($sessionToken, $submittedToken)) {
 
 $roomId = isset($_POST['room_id']) ? filter_var($_POST['room_id'], FILTER_VALIDATE_INT) : false;
 $status = isset($_POST['status']) ? (string) $_POST['status'] : '';
-$allowedStatuses = array('available', 'occupied', 'maintenance');
+$allowedStatuses = array('available', 'occupied', 'dirty', 'maintenance');
 
 if ($roomId === false || $roomId < 1 || !in_array($status, $allowedStatuses, true)) {
     redirect_to_rooms_with_message('error', 'Select a valid room and status.');
