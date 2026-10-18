@@ -94,6 +94,103 @@ CREATE TABLE IF NOT EXISTS room_transfers (
         REFERENCES users (id) ON UPDATE CASCADE ON DELETE RESTRICT
 ) ENGINE=InnoDB;
 
+CREATE TABLE IF NOT EXISTS inventory_categories (
+    id INT UNSIGNED NOT NULL AUTO_INCREMENT,
+    name VARCHAR(80) NOT NULL,
+    description VARCHAR(500) NULL,
+    is_active TINYINT(1) NOT NULL DEFAULT 1,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (id),
+    UNIQUE KEY uq_inventory_categories_name (name),
+    KEY idx_inventory_categories_active (is_active)
+) ENGINE=InnoDB;
+
+CREATE TABLE IF NOT EXISTS inventory_items (
+    id INT UNSIGNED NOT NULL AUTO_INCREMENT,
+    category_id INT UNSIGNED NOT NULL,
+    sku VARCHAR(64) NULL,
+    name VARCHAR(120) NOT NULL,
+    unit VARCHAR(30) NOT NULL DEFAULT 'piece',
+    reorder_level INT UNSIGNED NOT NULL DEFAULT 0,
+    description TEXT NULL,
+    is_active TINYINT(1) NOT NULL DEFAULT 1,
+    archived_at TIMESTAMP NULL DEFAULT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (id),
+    UNIQUE KEY uq_inventory_items_sku (sku),
+    KEY idx_inventory_items_category_active (category_id, is_active),
+    KEY idx_inventory_items_name (name),
+    CONSTRAINT fk_inventory_items_category FOREIGN KEY (category_id)
+        REFERENCES inventory_categories (id) ON UPDATE CASCADE ON DELETE RESTRICT
+) ENGINE=InnoDB;
+
+CREATE TABLE IF NOT EXISTS inventory_stock (
+    id INT UNSIGNED NOT NULL AUTO_INCREMENT,
+    item_id INT UNSIGNED NOT NULL,
+    room_id INT UNSIGNED NULL DEFAULT NULL,
+    quantity INT UNSIGNED NOT NULL DEFAULT 0,
+    item_condition ENUM('new', 'good', 'fair', 'damaged', 'needs_replacement') NOT NULL DEFAULT 'good',
+    status ENUM('available', 'in_use', 'needs_attention', 'missing', 'unavailable') NOT NULL DEFAULT 'available',
+    notes TEXT NULL,
+    purchase_date DATE NULL,
+    last_checked_at DATETIME NULL,
+    archived_at TIMESTAMP NULL DEFAULT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (id),
+    KEY idx_inventory_stock_item_location (item_id, room_id),
+    KEY idx_inventory_stock_room_status (room_id, status),
+    KEY idx_inventory_stock_attention (status, item_condition),
+    CONSTRAINT fk_inventory_stock_item FOREIGN KEY (item_id)
+        REFERENCES inventory_items (id) ON UPDATE CASCADE ON DELETE RESTRICT,
+    CONSTRAINT fk_inventory_stock_room FOREIGN KEY (room_id)
+        REFERENCES rooms (id) ON UPDATE CASCADE ON DELETE RESTRICT
+) ENGINE=InnoDB;
+
+CREATE TABLE IF NOT EXISTS inventory_movements (
+    id INT UNSIGNED NOT NULL AUTO_INCREMENT,
+    item_id INT UNSIGNED NOT NULL,
+    action ENUM('received', 'assigned', 'transferred', 'returned_to_storage', 'quantity_adjustment', 'condition_update', 'status_update', 'archived') NOT NULL,
+    quantity INT UNSIGNED NOT NULL DEFAULT 0,
+    from_room_id INT UNSIGNED NULL DEFAULT NULL,
+    from_room_number VARCHAR(20) NULL,
+    to_room_id INT UNSIGNED NULL DEFAULT NULL,
+    to_room_number VARCHAR(20) NULL,
+    from_condition ENUM('new', 'good', 'fair', 'damaged', 'needs_replacement') NULL,
+    to_condition ENUM('new', 'good', 'fair', 'damaged', 'needs_replacement') NULL,
+    from_status ENUM('available', 'in_use', 'needs_attention', 'missing', 'unavailable') NULL,
+    to_status ENUM('available', 'in_use', 'needs_attention', 'missing', 'unavailable') NULL,
+    notes VARCHAR(500) NULL,
+    changed_by INT UNSIGNED NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (id),
+    KEY idx_inventory_movements_item_date (item_id, created_at),
+    KEY idx_inventory_movements_from_room (from_room_id),
+    KEY idx_inventory_movements_to_room (to_room_id),
+    KEY idx_inventory_movements_user (changed_by),
+    CONSTRAINT fk_inventory_movements_item FOREIGN KEY (item_id)
+        REFERENCES inventory_items (id) ON UPDATE CASCADE ON DELETE RESTRICT,
+    CONSTRAINT fk_inventory_movements_from_room FOREIGN KEY (from_room_id)
+        REFERENCES rooms (id) ON UPDATE CASCADE ON DELETE SET NULL,
+    CONSTRAINT fk_inventory_movements_to_room FOREIGN KEY (to_room_id)
+        REFERENCES rooms (id) ON UPDATE CASCADE ON DELETE SET NULL,
+    CONSTRAINT fk_inventory_movements_user FOREIGN KEY (changed_by)
+        REFERENCES users (id) ON UPDATE CASCADE ON DELETE RESTRICT
+) ENGINE=InnoDB;
+
+INSERT INTO inventory_categories (name, description)
+VALUES
+    ('Bedding', 'Sheets, pillowcases, duvet covers, blankets, and comforters'),
+    ('Towels', 'Bath, hand, and face towels'),
+    ('Curtains', 'Curtains and drapes'),
+    ('Pillows', 'Pillows and pillow protectors'),
+    ('Mattresses', 'Mattresses and mattress protectors'),
+    ('Amenities', 'Guest amenities and minibar items'),
+    ('Cleaning supplies', 'Housekeeping and cleaning supplies')
+ON DUPLICATE KEY UPDATE name = VALUES(name);
+
 INSERT INTO users (username, password_hash, full_name, role, status)
 VALUES (
     'receptionist',

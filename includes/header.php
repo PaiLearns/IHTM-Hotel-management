@@ -20,7 +20,7 @@ function nav_link_class($page, $currentPage)
     $base = 'rounded-md px-3 py-2 text-sm font-semibold transition-colors';
     $activePage = in_array($currentPage, array('new_reservation.php', 'invoice.php'), true)
         ? 'reservations.php'
-        : $currentPage;
+        : ($currentPage === 'process_staff.php' ? 'staff.php' : $currentPage);
     return $page === $activePage
         ? $base . ' bg-amber-400 text-slate-950'
         : $base . ' text-white hover:bg-amber-400 hover:text-slate-950';
@@ -64,6 +64,10 @@ function nav_link_class($page, $currentPage)
                 <a href="dashboard.php" class="<?php echo nav_link_class('dashboard.php', $currentPage); ?>">Dashboard</a>
                 <a href="rooms.php" class="<?php echo nav_link_class('rooms.php', $currentPage); ?>">Rooms</a>
                 <a href="reservations.php" class="<?php echo nav_link_class('reservations.php', $currentPage); ?>">Reservations</a>
+                <a href="inventory.php" class="<?php echo nav_link_class('inventory.php', $currentPage); ?>">Inventory</a>
+                <?php if (isset($_SESSION['role']) && $_SESSION['role'] === 'admin'): ?>
+                    <a href="staff.php" class="<?php echo nav_link_class('staff.php', $currentPage); ?>">Staff</a>
+                <?php endif; ?>
             </nav>
             <div class="flex items-center justify-between gap-3 border-t border-white/20 pt-3 sm:border-l sm:border-t-0 sm:pl-4 sm:pt-0">
                 <span class="text-sm">

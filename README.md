@@ -29,6 +29,20 @@ Use `schema.sql` for a fresh installation or to add missing schema objects. It i
 
 Room transfers are available for confirmed and checked-in reservations. Transfers are recorded with the staff member and reason, and the destination room's current rate applies to the full stay. A transferred-from room is marked dirty when the guest is checked in; checking out marks the room maintenance. Staff can mark it available from Room Management after servicing and inspection.
 
+## Inventory
+
+The **Inventory** page lists active stock with category, location, quantity, condition, and status filters. Staff can add stock to general storage, edit item and stock details, and archive items without deleting their movement history. The inventory tables and starter categories must be installed from `schema.sql` before using this page. Room assignment and transfers are not yet available.
+
+## Staff administration
+
+Administrators can create receptionist and administrator accounts from the **Staff** page. If your current account is still a receptionist, sign in to phpMyAdmin, select `hotel_db`, and run this one-time query to grant the existing receptionist account administrator access (change the username if needed):
+
+```sql
+UPDATE users SET role = 'admin' WHERE username = 'receptionist';
+```
+
+Sign out and back in for the new role to take effect. Then use **Staff** in the navigation to add accounts. Use a unique username and a password of at least 12 characters; share temporary passwords securely.
+
 The application includes receptionist authentication, room and reservation management, check-in/check-out, and printable stay invoices. Room rates and stay dates determine the invoice estimate; payment collection and tax configuration are not included.
 
 Change the seeded development account password and secure MySQL credentials before deploying this application beyond a local development environment.
